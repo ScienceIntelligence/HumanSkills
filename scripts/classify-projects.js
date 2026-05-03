@@ -63,7 +63,9 @@ function parseArgs() {
 // ---------------------------------------------------------------------------
 
 function fetchTaxonomy() {
-  return new Promise((resolve, reject) => {
+  // Try remote first; fall back to bundled local taxonomy
+  const LOCAL_TAXONOMY = path.join(__dirname, '..', 'taxonomy', 'taxonomy.json');
+  return new Promise((resolve) => {
     https.get('https://humanskills.ai/taxonomy.json', (res) => {
       let data = '';
       res.on('data', (c) => data += c);
@@ -71,10 +73,12 @@ function fetchTaxonomy() {
         try {
           resolve(JSON.parse(data).taxonomy);
         } catch (e) {
-          reject(new Error('Failed to parse taxonomy: ' + e.message));
+          resolve(JSON.parse(require('fs').readFileSync(LOCAL_TAXONOMY, 'utf-8')).taxonomy);
         }
       });
-    }).on('error', reject);
+    }).on('error', () => {
+      resolve(JSON.parse(require('fs').readFileSync(LOCAL_TAXONOMY, 'utf-8')).taxonomy);
+    });
   });
 }
 
