@@ -29,6 +29,7 @@
     "commands/",
     "templates/",
     "scripts/",
+    "taxonomy/",
     "tests/"
   ],
   "engines": {

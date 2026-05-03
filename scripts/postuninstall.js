@@ -20,32 +20,25 @@ const HELPER_SCRIPTS = [
 ];
 
 // --- Claude Code ---
-const CC_COMMAND_TARGET = path.join(os.homedir(), ".claude", "commands", "researchskills-extract.md");
-const CC_CONVERT_TARGET = path.join(os.homedir(), ".claude", "commands", "researchskills-convert.md");
-const CC_UTILS_DIR = path.join(os.homedir(), ".claude", "utils");
+const CC_COMMAND_TARGET = path.join(os.homedir(), ".claude", "commands", "humanskills-extract.md");
+const CC_UTILS_DIR      = path.join(os.homedir(), ".claude", "utils");
 
 try {
   if (fs.existsSync(CC_COMMAND_TARGET)) {
     fs.unlinkSync(CC_COMMAND_TARGET);
     console.log("✓ Claude Code: /humanskills-extract removed");
   }
-  if (fs.existsSync(CC_CONVERT_TARGET)) {
-    fs.unlinkSync(CC_CONVERT_TARGET);
-    console.log("✓ Claude Code: /researchskills-convert removed");
-  }
   for (const script of HELPER_SCRIPTS) {
     const p = path.join(CC_UTILS_DIR, script);
     if (fs.existsSync(p)) fs.unlinkSync(p);
   }
   console.log("✓ Claude Code: helper scripts removed");
-} catch (err) {
-  // ignore
-}
+} catch (_) { /* ignore */ }
 
 // --- Codex ---
-const CODEX_SKILL_DIR = path.join(os.homedir(), ".codex", "skills", "researchskills-extract");
+const CODEX_SKILL_DIR    = path.join(os.homedir(), ".codex", "skills", "humanskills-extract");
 const CODEX_SKILL_TARGET = path.join(CODEX_SKILL_DIR, "SKILL.md");
-const CODEX_SCRIPTS_DIR = path.join(CODEX_SKILL_DIR, "scripts");
+const CODEX_SCRIPTS_DIR  = path.join(CODEX_SKILL_DIR, "scripts");
 
 try {
   if (fs.existsSync(CODEX_SKILL_TARGET)) {
@@ -56,28 +49,12 @@ try {
     const p = path.join(CODEX_SCRIPTS_DIR, script);
     if (fs.existsSync(p)) fs.unlinkSync(p);
   }
-  // Remove dirs if empty
   try {
-    const remaining = fs.readdirSync(CODEX_SCRIPTS_DIR);
-    if (remaining.length === 0) fs.rmdirSync(CODEX_SCRIPTS_DIR);
-    const skillRemaining = fs.readdirSync(CODEX_SKILL_DIR);
-    if (skillRemaining.length === 0) fs.rmdirSync(CODEX_SKILL_DIR);
+    if (fs.readdirSync(CODEX_SCRIPTS_DIR).length === 0) fs.rmdirSync(CODEX_SCRIPTS_DIR);
+    if (fs.readdirSync(CODEX_SKILL_DIR).length === 0)   fs.rmdirSync(CODEX_SKILL_DIR);
   } catch (_) { /* best effort */ }
   console.log("✓ Codex: helper scripts removed");
-} catch (err) {
-  // ignore
-}
-
-// --- Codex: researchskills-convert ---
-const CODEX_CONVERT_DIR = path.join(os.homedir(), ".codex", "skills", "researchskills-convert");
-try {
-  if (fs.existsSync(CODEX_CONVERT_DIR)) {
-    fs.rmSync(CODEX_CONVERT_DIR, { recursive: true, force: true });
-    console.log("✓ Codex: /researchskills-convert removed");
-  }
-} catch (err) {
-  // ignore
-}
+} catch (_) { /* ignore */ }
 
 // Note: cache directory ~/.humanskills/cache/ is intentionally preserved,
 // so reinstalling retains previously extracted subtrees.
