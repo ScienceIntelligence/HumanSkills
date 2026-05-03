@@ -5,12 +5,10 @@ const fs = require("fs");
 const path = require("path");
 const os = require("os");
 
-const SOURCE_CC_COMMAND = path.join(__dirname, "..", "commands", "researchskills-extract.md");
-const SOURCE_CC_CONVERT = path.join(__dirname, "..", "commands", "researchskills-convert.md");
-const SOURCE_CODEX_SKILL = path.join(__dirname, "..", "commands", "SKILL.md");
-const SOURCE_CODEX_CONVERT = path.join(__dirname, "..", "commands", "CONVERT-SKILL.md");
+const SOURCE_CC_COMMAND  = path.join(__dirname, "..", "commands", "humanskills-extract.md");
+const SOURCE_TAXONOMY    = path.join(__dirname, "..", "taxonomy", "taxonomy.json");
 
-// Helper scripts that must be available at runtime
+// Helper scripts copied to ~/.claude/utils/ so the slash command can call them
 const HELPER_SCRIPTS = [
   "platform.js",
   "scan-sessions.js",
@@ -25,19 +23,18 @@ const HELPER_SCRIPTS = [
   "store-local.js",
 ];
 
-// --- Claude Code ---
-const CC_COMMANDS_DIR = path.join(os.homedir(), ".claude", "commands");
-const CC_COMMAND_TARGET = path.join(CC_COMMANDS_DIR, "researchskills-extract.md");
-const CC_UTILS_DIR = path.join(os.homedir(), ".claude", "utils");
+// ---------------------------------------------------------------------------
+// Claude Code
+// ---------------------------------------------------------------------------
+const CC_COMMANDS_DIR   = path.join(os.homedir(), ".claude", "commands");
+const CC_COMMAND_TARGET = path.join(CC_COMMANDS_DIR, "humanskills-extract.md");
+const CC_UTILS_DIR      = path.join(os.homedir(), ".claude", "utils");
 
 try {
   fs.mkdirSync(CC_COMMANDS_DIR, { recursive: true });
   fs.mkdirSync(CC_UTILS_DIR, { recursive: true });
   fs.copyFileSync(SOURCE_CC_COMMAND, CC_COMMAND_TARGET);
-  const CC_CONVERT_TARGET = path.join(CC_COMMANDS_DIR, "researchskills-convert.md");
-  fs.copyFileSync(SOURCE_CC_CONVERT, CC_CONVERT_TARGET);
   console.log("✓ Claude Code: /humanskills-extract installed to ~/.claude/commands/");
-  console.log("✓ Claude Code: /researchskills-convert installed to ~/.claude/commands/");
 
   for (const script of HELPER_SCRIPTS) {
     const src = path.join(__dirname, script);
@@ -48,27 +45,23 @@ try {
       console.warn(`⚠ Claude Code: ${script} not found in package, skipping`);
     }
   }
-  console.log(`✓ Claude Code: ${HELPER_SCRIPTS.length} scripts installed to ~/.claude/utils/`);
+  console.log(`✓ Claude Code: ${HELPER_SCRIPTS.length} helper scripts installed to ~/.claude/utils/`);
 } catch (err) {
   console.error("⚠ Claude Code: could not install —", err.message);
 }
 
-// --- Codex ---
-const CODEX_SKILL_DIR = path.join(os.homedir(), ".codex", "skills", "researchskills-extract");
+// ---------------------------------------------------------------------------
+// Codex
+// ---------------------------------------------------------------------------
+const CODEX_SKILL_DIR    = path.join(os.homedir(), ".codex", "skills", "humanskills-extract");
 const CODEX_SKILL_TARGET = path.join(CODEX_SKILL_DIR, "SKILL.md");
-const CODEX_SCRIPTS_DIR = path.join(CODEX_SKILL_DIR, "scripts");
+const CODEX_SCRIPTS_DIR  = path.join(CODEX_SKILL_DIR, "scripts");
 
 try {
   fs.mkdirSync(CODEX_SKILL_DIR, { recursive: true });
   fs.mkdirSync(CODEX_SCRIPTS_DIR, { recursive: true });
-  fs.copyFileSync(SOURCE_CODEX_SKILL, CODEX_SKILL_TARGET);
-  console.log("✓ Codex:   /humanskills-extract installed to ~/.codex/skills/humanskills-extract/");
-
-  // --- Codex: researchskills-convert ---
-  const CODEX_CONVERT_DIR = path.join(os.homedir(), ".codex", "skills", "researchskills-convert");
-  fs.mkdirSync(CODEX_CONVERT_DIR, { recursive: true });
-  fs.copyFileSync(SOURCE_CODEX_CONVERT, path.join(CODEX_CONVERT_DIR, "SKILL.md"));
-  console.log("✓ Codex:   /researchskills-convert installed to ~/.codex/skills/researchskills-convert/");
+  fs.copyFileSync(SOURCE_CC_COMMAND, CODEX_SKILL_TARGET);
+  console.log("✓ Codex:       $humanskills-extract installed to ~/.codex/skills/humanskills-extract/");
 
   for (const script of HELPER_SCRIPTS) {
     const src = path.join(__dirname, script);
@@ -79,86 +72,15 @@ try {
       console.warn(`⚠ Codex: ${script} not found in package, skipping`);
     }
   }
-  console.log(`✓ Codex:   ${HELPER_SCRIPTS.length} scripts installed to ~/.codex/skills/humanskills-extract/scripts/`);
+  console.log(`✓ Codex:       ${HELPER_SCRIPTS.length} helper scripts installed to ~/.codex/skills/humanskills-extract/scripts/`);
 } catch (err) {
   console.error("⚠ Codex: could not install —", err.message);
 }
 
-// --- Clean up legacy extract-knowhow command files ---
-const LEGACY_CC_COMMAND = path.join(os.homedir(), ".claude", "commands", "extract-knowhow.md");
-const LEGACY_CODEX_DIR = path.join(os.homedir(), ".codex", "skills", "extract-knowhow");
-try {
-  if (fs.existsSync(LEGACY_CC_COMMAND)) {
-    fs.unlinkSync(LEGACY_CC_COMMAND);
-    console.log("✓ Removed legacy ~/.claude/commands/extract-knowhow.md");
-  }
-  if (fs.existsSync(LEGACY_CODEX_DIR)) {
-    fs.rmSync(LEGACY_CODEX_DIR, { recursive: true, force: true });
-    console.log("✓ Removed legacy ~/.codex/skills/extract-knowhow/");
-  }
-} catch (err) {
-  console.warn("⚠ Could not clean up legacy files —", err.message);
-}
-
-// --- Migrate legacy cache from @openscientist/extract-knowhow ---
-const OLD_CACHE_ROOT = path.join(os.homedir(), ".openscientist");
-const NEW_CACHE_ROOT = path.join(os.homedir(), ".humanskills");
-
-if (fs.existsSync(OLD_CACHE_ROOT)) {
-  if (!fs.existsSync(NEW_CACHE_ROOT)) {
-    // Simple case: just rename
-    try {
-      fs.renameSync(OLD_CACHE_ROOT, NEW_CACHE_ROOT);
-      console.log("✓ Migrated ~/.openscientist/ → ~/.humanskills/");
-    } catch (err) {
-      console.warn("⚠ Could not migrate ~/.openscientist/ —", err.message);
-      console.warn("  You can manually run: mv ~/.openscientist ~/.humanskills");
-    }
-  } else {
-    // Both exist: recursively merge missing files from old into new
-    function mergeDirs(src, dst) {
-      if (!fs.existsSync(src)) return;
-      fs.mkdirSync(dst, { recursive: true });
-      for (const entry of fs.readdirSync(src)) {
-        const s = path.join(src, entry);
-        const d = path.join(dst, entry);
-        if (fs.statSync(s).isDirectory()) {
-          mergeDirs(s, d); // recurse into subdirs even if they exist
-        } else if (!fs.existsSync(d)) {
-          fs.copyFileSync(s, d);
-        }
-      }
-    }
-    try {
-      for (const sub of ["cache/meta", "cache/skills", "cache/sessions", "skills-fallback"]) {
-        mergeDirs(path.join(OLD_CACHE_ROOT, sub), path.join(NEW_CACHE_ROOT, sub));
-      }
-      console.log("✓ Merged legacy ~/.openscientist/ into ~/.humanskills/");
-    } catch (err) {
-      console.warn("⚠ Could not merge ~/.openscientist/ —", err.message);
-    }
-  }
-}
-
-// --- Handle old package coexistence ---
-// The old @openscientist/extract-knowhow postuninstall deletes the same
-// command files we just installed. Proactively reinstall our files after
-// detecting the old package, so users can safely uninstall it later.
-try {
-  const { execSync } = require("child_process");
-  const out = execSync("npm ls -g @openscientist/extract-knowhow --depth=0 2>/dev/null", { encoding: "utf-8" });
-  if (out.includes("@openscientist/extract-knowhow")) {
-    console.log("\n⚠ Old @openscientist/extract-knowhow is still installed.");
-    console.log("  After uninstalling it, run this to restore command files:");
-    console.log("  npm install -g @scienceintelligence/humanskills-extract\n");
-  }
-} catch (_) { /* not installed or npm ls failed — fine */ }
-
-// --- Cache directory ---
-// Any version change wipes all caches (skills + meta + sessions).
-// Reason: both extraction prompts AND raw-conversation preprocessing can change
-// between versions, so nothing is safe to reuse.
-const CACHE_DIR = path.join(os.homedir(), ".humanskills", "cache");
+// ---------------------------------------------------------------------------
+// Cache directory + taxonomy
+// ---------------------------------------------------------------------------
+const CACHE_DIR    = path.join(os.homedir(), ".humanskills", "cache");
 const VERSION_FILE = path.join(CACHE_DIR, ".version");
 const CURRENT_VERSION = require(path.join(__dirname, "..", "package.json")).version;
 
@@ -180,7 +102,6 @@ try {
     : null;
 
   if (previousVersion && previousVersion !== CURRENT_VERSION) {
-    // Version changed — wipe all processed caches (keep nothing)
     rmrf(path.join(CACHE_DIR, "skills"));
     rmrf(path.join(CACHE_DIR, "meta"));
     rmrf(path.join(CACHE_DIR, "sessions"));
@@ -191,14 +112,40 @@ try {
     console.log(`✓ Cache:       version ${CURRENT_VERSION} (reusing existing cache)`);
   }
 
-  fs.mkdirSync(path.join(CACHE_DIR, "meta"), { recursive: true });
-  fs.mkdirSync(path.join(CACHE_DIR, "skills"), { recursive: true });
+  fs.mkdirSync(path.join(CACHE_DIR, "meta"),     { recursive: true });
+  fs.mkdirSync(path.join(CACHE_DIR, "skills"),   { recursive: true });
   fs.mkdirSync(path.join(CACHE_DIR, "sessions"), { recursive: true });
   fs.writeFileSync(VERSION_FILE, CURRENT_VERSION);
+
+  // Copy bundled taxonomy so classify-projects.js can use it offline
+  const taxonomyDst = path.join(CACHE_DIR, "taxonomy.json");
+  if (fs.existsSync(SOURCE_TAXONOMY)) {
+    fs.copyFileSync(SOURCE_TAXONOMY, taxonomyDst);
+    console.log("✓ Taxonomy:    bundled taxonomy.json copied to ~/.humanskills/cache/");
+  }
 } catch (err) {
   console.error("⚠ Cache: could not prepare —", err.message);
 }
 
+// ---------------------------------------------------------------------------
+// Legacy cleanup — remove old researchskills command files if present
+// ---------------------------------------------------------------------------
+const LEGACY_FILES = [
+  path.join(os.homedir(), ".claude", "commands", "researchskills-extract.md"),
+  path.join(os.homedir(), ".claude", "commands", "researchskills-convert.md"),
+];
+for (const f of LEGACY_FILES) {
+  try {
+    if (fs.existsSync(f)) {
+      fs.unlinkSync(f);
+      console.log(`✓ Removed legacy ${f}`);
+    }
+  } catch (err) {
+    console.warn(`⚠ Could not remove legacy file ${f} —`, err.message);
+  }
+}
+
 console.log("\n  Usage:");
-console.log("    /humanskills-extract  (Claude Code) or $researchskills-extract  (Codex) — extract from history");
-console.log("    /researchskills-convert  (Claude Code) or $researchskills-convert  (Codex) — convert existing skills");
+console.log("    Claude Code: /humanskills-extract");
+console.log("    Codex:       $humanskills-extract");
+console.log("    Docs:        https://humanskills.ai\n");
