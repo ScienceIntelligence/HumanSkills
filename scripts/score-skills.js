@@ -7,9 +7,9 @@
  * each skill file and writes review_scores into the YAML frontmatter.
  *
  * Three scoring dimensions (0-5 each):
- *   - procedural: does it provide decision frameworks AI doesn't know?
- *   - semantic:   does it provide facts/beliefs AI doesn't have?
- *   - episodic:   does it provide concrete research experiences AI can reference?
+ *   - procedural: does it provide expert decision frameworks AI doesn't reliably know?
+ *   - semantic:   does it provide domain facts/beliefs AI doesn't have or gets wrong?
+ *   - episodic:   does it provide concrete practitioner experiences AI can reference?
  *
  * Usage:
  *   score-skills.js --session-ids id1,id2,... [--verbose]
@@ -65,9 +65,9 @@ function collectSkillFiles(sessionIds) {
 function buildPrompt(files) {
   const fileList = files.map(f => f).join('\n');
 
-  return `You are a research knowledge value assessor. You have ${files.length} cleaned research skill files to score.
+  return `You are a human skills value assessor. You have ${files.length} cleaned skill files to score.
 
-These skills have already passed quality review (engineering content removed, PII fixed, duplicates merged). Your job is to assess the VALUE each skill brings to the most capable AI systems.
+These skills span any human discipline — medicine, law, cooking, music, engineering, sports, teaching, crafts, and more. They have already passed quality review (trivial/harmful content removed, PII fixed, duplicates merged). Your job is to assess the VALUE each skill brings to the most capable AI systems when used as context.
 
 ## Skill file paths
 
@@ -92,52 +92,59 @@ If the file already has a \`review_scores\` block, replace it with the new score
 
 ## Three Scoring Dimensions
 
-### procedural — Procedural memory value
-**Question**: Does this skill provide research decision frameworks or principles that the strongest AI doesn't already know?
+### procedural — Expert decision framework value
+**Question**: Does this skill provide expert decision rules or judgment patterns that the strongest AI doesn't already know?
+
+Examples of high-scoring procedural skills: a surgeon's rule for when NOT to proceed with a planned technique mid-operation; a jazz musician's heuristic for choosing which chord substitution fits a specific harmonic context; a lawyer's decision tree for when to settle vs. litigate.
 
 | Score | Meaning |
 |-------|---------|
-| 0 | AI can fully derive this decision logic on its own, no external prompt needed |
+| 0 | AI can fully derive this decision logic on its own |
 | 1 | AI would likely think of this, but might not prioritize this path |
-| 2 | AI could figure out parts of this, but would miss key exclusion conditions or failure handling |
+| 2 | AI could figure out parts of this, but would miss key exclusion conditions or edge cases |
 | 3 | AI is unlikely to independently produce this decision framework, but would recognize it as sound |
-| 4 | AI would take the wrong path when facing this research impasse; this skill directly corrects its search direction |
+| 4 | AI would take the wrong path in this situation; this skill directly corrects its default approach |
 | 5 | AI would confidently take the wrong path; this skill corrects a confident-but-wrong decision pattern |
 
 **Focus**: Is the trigger condition specific? Are rejected alternatives explicitly stated with reasons? Is failure recovery covered?
 
-### semantic — Declarative memory value
-**Question**: Does this skill provide knowledge or beliefs that the strongest AI doesn't have?
+### semantic — Domain knowledge value
+**Question**: Does this skill provide facts, constraints, or beliefs that the strongest AI doesn't have or gets wrong?
+
+Examples of high-scoring semantic skills: an undocumented interaction between two medications that causes a specific reaction; a regional legal precedent that overrides the general rule; a fermentation timing constraint that only experienced bakers know.
 
 | Score | Meaning |
 |-------|---------|
 | 0 | Textbook-level knowledge, any LLM knows this |
-| 1 | Public but obscure knowledge, model might know but uncertain |
-| 2 | Relatively new knowledge, may have appeared after model training cutoff |
-| 3 | Model very likely doesn't know this specific fact (e.g., undocumented tool behavior) |
-| 4 | Model holds an incorrect belief here, would give a confident but wrong answer |
-| 5 | Non-public, lab-level knowledge that cannot exist in training data |
+| 1 | Public but obscure, model might know but uncertain |
+| 2 | Relatively new or niche knowledge, may post-date model training |
+| 3 | Model very likely doesn't know this specific fact |
+| 4 | Model holds an incorrect belief here; would give a confident but wrong answer |
+| 5 | Non-public, practitioner-only knowledge that cannot plausibly exist in training data |
 
-**Focus**: Is there concrete evidence? Is it frontier / non-public / correction type?
+**Focus**: Is there concrete evidence? Is it niche / recent / a correction to a common misconception?
 
-### episodic — Episodic memory value
-**Question**: Does this skill provide concrete research experiences that AI can reference?
+### episodic — Practitioner experience value
+**Question**: Does this skill provide a concrete real-world experience that AI can reference and apply in similar situations?
+
+Examples of high-scoring episodic skills: a chef who discovered mid-service that a specific dough behaved differently at altitude and adapted; a teacher who found that a standard explanation consistently confused students from a particular background and switched approaches.
 
 | Score | Meaning |
 |-------|---------|
 | 0 | Pure abstract advice, no concrete situation |
-| 1 | Has situational description but very generic ("in an experiment...") |
-| 2 | Has specific situation and action, but outcome/lesson unclear |
-| 3 | Complete situation-action-outcome chain, AI can reference in similar situations |
-| 4 | Contains counter-intuitive turning point (expected A, observed B), AI can directly reuse when encountering similar anomalies |
-| 5 | Highly specific failure/adaptation/anomaly experience with clear retrieval cues that can auto-trigger in similar situations |
+| 1 | Has situational description but very generic ("in practice...", "sometimes...") |
+| 2 | Has specific situation and action, but outcome or lesson is unclear |
+| 3 | Complete situation → action → outcome chain; AI can reference in similar situations |
+| 4 | Contains a counter-intuitive turning point (expected A, got B); AI can reuse when encountering similar surprises |
+| 5 | Highly specific failure or adaptation with clear retrieval cues that would auto-trigger in similar situations |
 
-**Focus**: Is there a concrete situation → action → outcome chain? Is the lesson transferable?
+**Focus**: Is there a concrete situation → action → outcome chain? Is the lesson transferable across similar contexts?
 
 ## Key Principles
 
-- **Three dimensions are independent**: A procedural skill can simultaneously score high on semantic (carries facts AI doesn't know) and episodic (grounded in a specific research episode)
-- **Core criterion**: Without this skill, would the strongest frontier AI perform worse in the corresponding dimension?
+- **Three dimensions are independent**: A skill can score high on all three simultaneously — e.g. a procedural rule grounded in a specific incident (episodic) that also corrects a common misconception (semantic)
+- **Discipline doesn't affect score**: A high-value cooking skill and a high-value surgery skill should receive equivalent scores if they provide equivalent decision/knowledge/experience value to an AI
+- **Core criterion**: Without this skill as context, would the strongest frontier AI perform worse in the corresponding dimension?
 - **memory_type vs review_scores**: \`memory_type\` is structural classification (format). \`review_scores\` is value assessment (what it actually contributes).
 
 ## Output
