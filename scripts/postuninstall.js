@@ -27,7 +27,7 @@ const CC_UTILS_DIR = path.join(os.homedir(), ".claude", "utils");
 try {
   if (fs.existsSync(CC_COMMAND_TARGET)) {
     fs.unlinkSync(CC_COMMAND_TARGET);
-    console.log("✓ Claude Code: /researchskills-extract removed");
+    console.log("✓ Claude Code: /humanskills-extract removed");
   }
   if (fs.existsSync(CC_CONVERT_TARGET)) {
     fs.unlinkSync(CC_CONVERT_TARGET);
@@ -50,7 +50,7 @@ const CODEX_SCRIPTS_DIR = path.join(CODEX_SKILL_DIR, "scripts");
 try {
   if (fs.existsSync(CODEX_SKILL_TARGET)) {
     fs.unlinkSync(CODEX_SKILL_TARGET);
-    console.log("✓ Codex: /researchskills-extract SKILL.md removed");
+    console.log("✓ Codex: /humanskills-extract SKILL.md removed");
   }
   for (const script of HELPER_SCRIPTS) {
     const p = path.join(CODEX_SCRIPTS_DIR, script);
@@ -79,5 +79,5 @@ try {
   // ignore
 }
 
-// Note: cache directory ~/.researchskills/cache/ is intentionally preserved,
+// Note: cache directory ~/.humanskills/cache/ is intentionally preserved,
 // so reinstalling retains previously extracted subtrees.

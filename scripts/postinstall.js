@@ -36,7 +36,7 @@ try {
   fs.copyFileSync(SOURCE_CC_COMMAND, CC_COMMAND_TARGET);
   const CC_CONVERT_TARGET = path.join(CC_COMMANDS_DIR, "researchskills-convert.md");
   fs.copyFileSync(SOURCE_CC_CONVERT, CC_CONVERT_TARGET);
-  console.log("✓ Claude Code: /researchskills-extract installed to ~/.claude/commands/");
+  console.log("✓ Claude Code: /humanskills-extract installed to ~/.claude/commands/");
   console.log("✓ Claude Code: /researchskills-convert installed to ~/.claude/commands/");
 
   for (const script of HELPER_SCRIPTS) {
@@ -62,7 +62,7 @@ try {
   fs.mkdirSync(CODEX_SKILL_DIR, { recursive: true });
   fs.mkdirSync(CODEX_SCRIPTS_DIR, { recursive: true });
   fs.copyFileSync(SOURCE_CODEX_SKILL, CODEX_SKILL_TARGET);
-  console.log("✓ Codex:   /researchskills-extract installed to ~/.codex/skills/researchskills-extract/");
+  console.log("✓ Codex:   /humanskills-extract installed to ~/.codex/skills/humanskills-extract/");
 
   // --- Codex: researchskills-convert ---
   const CODEX_CONVERT_DIR = path.join(os.homedir(), ".codex", "skills", "researchskills-convert");
@@ -79,7 +79,7 @@ try {
       console.warn(`⚠ Codex: ${script} not found in package, skipping`);
     }
   }
-  console.log(`✓ Codex:   ${HELPER_SCRIPTS.length} scripts installed to ~/.codex/skills/researchskills-extract/scripts/`);
+  console.log(`✓ Codex:   ${HELPER_SCRIPTS.length} scripts installed to ~/.codex/skills/humanskills-extract/scripts/`);
 } catch (err) {
   console.error("⚠ Codex: could not install —", err.message);
 }
@@ -102,17 +102,17 @@ try {
 
 // --- Migrate legacy cache from @openscientist/extract-knowhow ---
 const OLD_CACHE_ROOT = path.join(os.homedir(), ".openscientist");
-const NEW_CACHE_ROOT = path.join(os.homedir(), ".researchskills");
+const NEW_CACHE_ROOT = path.join(os.homedir(), ".humanskills");
 
 if (fs.existsSync(OLD_CACHE_ROOT)) {
   if (!fs.existsSync(NEW_CACHE_ROOT)) {
     // Simple case: just rename
     try {
       fs.renameSync(OLD_CACHE_ROOT, NEW_CACHE_ROOT);
-      console.log("✓ Migrated ~/.openscientist/ → ~/.researchskills/");
+      console.log("✓ Migrated ~/.openscientist/ → ~/.humanskills/");
     } catch (err) {
       console.warn("⚠ Could not migrate ~/.openscientist/ —", err.message);
-      console.warn("  You can manually run: mv ~/.openscientist ~/.researchskills");
+      console.warn("  You can manually run: mv ~/.openscientist ~/.humanskills");
     }
   } else {
     // Both exist: recursively merge missing files from old into new
@@ -133,7 +133,7 @@ if (fs.existsSync(OLD_CACHE_ROOT)) {
       for (const sub of ["cache/meta", "cache/skills", "cache/sessions", "skills-fallback"]) {
         mergeDirs(path.join(OLD_CACHE_ROOT, sub), path.join(NEW_CACHE_ROOT, sub));
       }
-      console.log("✓ Merged legacy ~/.openscientist/ into ~/.researchskills/");
+      console.log("✓ Merged legacy ~/.openscientist/ into ~/.humanskills/");
     } catch (err) {
       console.warn("⚠ Could not merge ~/.openscientist/ —", err.message);
     }
@@ -150,7 +150,7 @@ try {
   if (out.includes("@openscientist/extract-knowhow")) {
     console.log("\n⚠ Old @openscientist/extract-knowhow is still installed.");
     console.log("  After uninstalling it, run this to restore command files:");
-    console.log("  npm install -g @scienceintelligence/researchskills-extract\n");
+    console.log("  npm install -g @scienceintelligence/humanskills-extract\n");
   }
 } catch (_) { /* not installed or npm ls failed — fine */ }
 
@@ -158,7 +158,7 @@ try {
 // Any version change wipes all caches (skills + meta + sessions).
 // Reason: both extraction prompts AND raw-conversation preprocessing can change
 // between versions, so nothing is safe to reuse.
-const CACHE_DIR = path.join(os.homedir(), ".researchskills", "cache");
+const CACHE_DIR = path.join(os.homedir(), ".humanskills", "cache");
 const VERSION_FILE = path.join(CACHE_DIR, ".version");
 const CURRENT_VERSION = require(path.join(__dirname, "..", "package.json")).version;
 
@@ -200,5 +200,5 @@ try {
 }
 
 console.log("\n  Usage:");
-console.log("    /researchskills-extract  (Claude Code) or $researchskills-extract  (Codex) — extract from history");
+console.log("    /humanskills-extract  (Claude Code) or $researchskills-extract  (Codex) — extract from history");
 console.log("    /researchskills-convert  (Claude Code) or $researchskills-convert  (Codex) — convert existing skills");

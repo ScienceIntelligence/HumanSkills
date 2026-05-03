@@ -6,7 +6,7 @@
  * For each uncached session: format → call AI → validate.
  *
  * This script is the deterministic loop; Sonnet does the AI judgment.
- * The main /researchskills-extract agent calls this script once with Bash,
+ * The main /humanskills-extract agent calls this script once with Bash,
  * keeping its own context clean.
  *
  * Usage:
@@ -118,7 +118,7 @@ function isCached(sessionId) {
 }
 
 function isSegmentCached(sessionId, segInfo) {
-  const dir = path.join(os.homedir(), '.researchskills', 'cache', 'skills', sessionId);
+  const dir = path.join(os.homedir(), '.humanskills', 'cache', 'skills', sessionId);
   if (!segInfo) {
     // Single-segment session: cached if skills exist OR .done marker present
     try {
@@ -262,7 +262,7 @@ function injectProjectMeta(content, projectMeta) {
 }
 
 function markSegmentDone(sessionId, segInfo) {
-  const dir = path.join(os.homedir(), '.researchskills', 'cache', 'skills', sessionId);
+  const dir = path.join(os.homedir(), '.humanskills', 'cache', 'skills', sessionId);
   fs.mkdirSync(dir, { recursive: true });
   const marker = segInfo ? `.done-s${segInfo.index}` : '.done';
   fs.writeFileSync(path.join(dir, marker), '');
@@ -538,7 +538,7 @@ async function main() {
   const cachedCounts = { total: 0, episodic: 0, semantic: 0, procedural: 0 };
   const processedSids = new Set(prepared.map(p => p.sid));
   for (const sid of processedSids) {
-    const cacheDir = path.join(os.homedir(), '.researchskills', 'cache', 'skills', sid);
+    const cacheDir = path.join(os.homedir(), '.humanskills', 'cache', 'skills', sid);
     try {
       const files = fs.readdirSync(cacheDir).filter(f => f.endsWith('.md'));
       for (const file of files) {

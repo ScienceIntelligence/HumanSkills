@@ -1,22 +1,21 @@
 {
-  "name": "@scienceintelligence/researchskills-extract",
-  "version": "0.18.1",
-  "description": "Extract your research trajectory as a decision tree from conversation history for ResearchSkills. Supports both Claude Code and Codex.",
+  "name": "@scienceintelligence/humanskills-extract",
+  "version": "0.1.0",
+  "description": "Extract human skills from any discipline — science, medicine, law, engineering, arts, crafts, and more — from conversation history.",
   "keywords": [
     "claude-code",
     "codex",
-    "researchskills",
-    "scientific-research",
-    "know-how",
+    "humanskills",
     "skills",
-    "ai-science"
+    "knowledge-extraction",
+    "ai",
+    "lifelong-learning"
   ],
-  "author": "ResearchSkills Contributors",
+  "author": "ScienceIntelligence Contributors",
   "license": "CC-BY-4.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ScienceIntelligence/ResearchSkills.git",
-    "directory": "researchskills-extract"
+    "url": "git+https://github.com/ScienceIntelligence/HumanSkills.git"
   },
   "publishConfig": {
     "access": "public"

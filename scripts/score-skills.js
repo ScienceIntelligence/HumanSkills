@@ -2,7 +2,7 @@
 /**
  * score-skills.js
  *
- * Stage 5 of /researchskills-extract: score cleaned skills.
+ * Stage 5 of /humanskills-extract: score cleaned skills.
  * Spawns an AI instance (via platform.js) that reads
  * each skill file and writes review_scores into the YAML frontmatter.
  *
@@ -22,7 +22,7 @@ const path = require('path');
 const os = require('os');
 const { parsePlatformFlag, createRunner } = require('./platform');
 
-const CACHE_DIR = path.join(os.homedir(), '.researchskills', 'cache', 'skills');
+const CACHE_DIR = path.join(os.homedir(), '.humanskills', 'cache', 'skills');
 
 // ---------------------------------------------------------------------------
 // CLI

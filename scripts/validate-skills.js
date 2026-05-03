@@ -2,7 +2,7 @@
 /**
  * validate-skills.js
  *
- * Helper for the /researchskills-extract AI phase. The AI reads a formatted
+ * Helper for the /humanskills-extract AI phase. The AI reads a formatted
  * session and extracts cognitive memory-type skills as markdown files.
  * This script validates the skill markdown (frontmatter + required
  * sections) and caches validated skills per session.
@@ -20,7 +20,7 @@
  *   is-cached <session_id>
  *       Exit 0 if any cached skills exist for this session, 1 otherwise.
  *
- * Cache location: ~/.researchskills/cache/skills/<session_id>/
+ * Cache location: ~/.humanskills/cache/skills/<session_id>/
  */
 
 'use strict';
@@ -30,7 +30,7 @@ const path = require('path');
 const os = require('os');
 const crypto = require('crypto');
 
-const CACHE_DIR = path.join(os.homedir(), '.researchskills', 'cache', 'skills');
+const CACHE_DIR = path.join(os.homedir(), '.humanskills', 'cache', 'skills');
 
 const VALID_MEMORY_TYPES = new Set(['procedural', 'semantic', 'episodic']);
 

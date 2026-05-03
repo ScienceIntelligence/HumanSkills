@@ -16,7 +16,7 @@
  * Usage:
  *   store-local.js --target claude|codex|both --session-ids id1,id2,...
  *
- * Reads validated skills from ~/.researchskills/cache/skills/<session_id>/
+ * Reads validated skills from ~/.humanskills/cache/skills/<session_id>/
  * and copies them to the chosen target(s).
  */
 
@@ -27,7 +27,7 @@ const path = require('path');
 const os = require('os');
 const crypto = require('crypto');
 
-const CACHE_DIR = path.join(os.homedir(), '.researchskills', 'cache', 'skills');
+const CACHE_DIR = path.join(os.homedir(), '.humanskills', 'cache', 'skills');
 
 /**
  * Extract a field from YAML frontmatter.

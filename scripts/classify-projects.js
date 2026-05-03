@@ -2,22 +2,22 @@
 /**
  * classify-projects.js
  *
- * Classifies projects from work-list.json as research vs engineering
+ * Classifies projects from work-list.json by discipline
  * using AI (via platform.js), then picks domain/subdomain from the taxonomy.
  *
  * Usage:
  *   classify-projects.js <work-list.json> [--test] [--verbose]
  *
- * Output: ~/.researchskills/cache/classification.json
+ * Output: ~/.humanskills/cache/classification.json
  *   {
  *     projects: {
  *       "<project_path>": {
  *         slug: "project-name",
- *         type: "research" | "engineering" | "other",
- *         domain: "computer-science",
- *         subdomain: "artificial-intelligence",
+ *         type: "skilled" | "trivial" | "other",
+ *         domain: "medicine",
+ *         subdomain: "surgery",
  *         session_ids: ["id1", "id2", ...],
- *         research_session_ids: ["id1", ...],
+ *         skill_session_ids: ["id1", ...],
  *         skipped_session_ids: ["id3", ...],
  *         reason: "why classified this way"
  *       }
@@ -33,7 +33,7 @@ const os = require('os');
 const https = require('https');
 const { parsePlatformFlag, createRunner } = require('./platform');
 
-const OUTPUT_PATH = path.join(os.homedir(), '.researchskills', 'cache', 'classification.json');
+const OUTPUT_PATH = path.join(os.homedir(), '.humanskills', 'cache', 'classification.json');
 
 // Max concurrent AI classify calls — prevents resource thrashing & API rate limits
 const CONCURRENCY = 5;
@@ -64,7 +64,7 @@ function parseArgs() {
 
 function fetchTaxonomy() {
   return new Promise((resolve, reject) => {
-    https.get('https://researchskills.ai/taxonomy.json', (res) => {
+    https.get('https://humanskills.ai/taxonomy.json', (res) => {
       let data = '';
       res.on('data', (c) => data += c);
       res.on('end', () => {
@@ -98,7 +98,7 @@ function buildPrompt(projectPath, sessions, taxonomyStr, isTest) {
     samples.push(lines.join('\n'));
   }
 
-  return `Classify this project and pick the best domain/subdomain.
+  return `Classify this project by discipline and pick the best domain/subdomain.
 
 ## Project
 Path slug: ${slug}
@@ -111,18 +111,22 @@ ${samples.join('\n\n')}
 ${taxonomyStr}
 
 ## Task
-${isTest
-    ? 'TEST MODE: Accept both research AND engineering projects. Map engineering to computer-science/software-engineering or the closest match.'
-    : 'PRODUCTION MODE: Only classify as "research" if the sessions involve genuine scientific inquiry, research methodology, hypothesis testing, academic writing, OR computational science where the code is written to answer or validate a research question (simulations, solvers, numerical methods, scientific data analysis pipelines). Reusable numerics libraries or benchmark harnesses with no specific scientific inquiry are engineering, not research. Software engineering (web dev, deployment, debugging non-scientific tools, UI work, auth, package management) is NOT research regardless of difficulty.'}
+Classify this project as "skilled", "trivial", or "other".
+
+- "skilled": sessions contain genuine human skill being practiced, learned, or applied — from ANY discipline. This includes medicine, law, engineering, science, cooking, music, teaching, writing, carpentry, sports, crafts, design, therapy, farming, programming, and any other human activity requiring knowledge and judgment.
+- "trivial": sessions are too shallow to contain extractable skills (casual chat, simple lookups, single commands, greetings).
+- "other": unclear or mixed content.
+
+${isTest ? 'TEST MODE: Be generous — classify as "skilled" if there is any substantive skill-related content.' : 'PRODUCTION MODE: Classify as "skilled" if the sessions show someone actively applying, learning, or discussing skills with enough depth that a useful skill could be extracted.'}
 
 Respond with EXACTLY this JSON (no markdown fences, no other text):
-{"type":"research","domain":"...","subdomain":"...","project_name":"...","reason":"one sentence why","skip_patterns":["pattern1"]}
+{"type":"skilled","domain":"...","subdomain":"...","project_name":"...","reason":"one sentence why","skip_patterns":["pattern1"]}
 
-- type: "research" or "engineering" or "other"
-- domain/subdomain: from the taxonomy list above. For engineering use "computer-science/software-engineering"
-- project_name: a short, descriptive name (3-8 words) summarizing the research topic of this project based on the session content. Do NOT use the folder name. Examples: "Protein Folding Simulation Pipeline", "Neural ODE Parameter Estimation", "Galaxy Merger Classification". For engineering projects, describe the tool/system being built.
+- type: "skilled" or "trivial" or "other"
+- domain/subdomain: from the taxonomy list above — pick the closest match to the discipline shown in the sessions
+- project_name: a short, descriptive name (3-8 words) summarizing what skill area this project covers. Do NOT use the folder name. Examples: "Emergency Triage Decision Making", "Jazz Improvisation Techniques", "Contract Negotiation Strategies", "Sourdough Bread Fermentation".
 - reason: one sentence explaining classification
-- skip_patterns: substrings in first_prompt that indicate non-research sessions to skip (e.g. "researchskills-extract", "extract-knowhow", "npm run build"). Empty array if none.`;
+- skip_patterns: substrings in first_prompt that indicate tool/meta sessions to skip (e.g. "humanskills-extract", "npm run build", "git push"). Empty array if none.`;
 }
 
 // ---------------------------------------------------------------------------
@@ -180,7 +184,7 @@ async function main() {
       return {
         projPath, slug, type: 'error', domain: null, subdomain: null,
         session_ids: projSessions.map(s => s.session_id),
-        research_session_ids: [],
+        skill_session_ids: [],
         skipped_session_ids: projSessions.map(s => s.session_id),
         reason: `Classification failed: ${error}`,
       };
@@ -207,7 +211,7 @@ async function main() {
       return {
         projPath, slug, type: 'error', domain: null, subdomain: null,
         session_ids: projSessions.map(s => s.session_id),
-        research_session_ids: [],
+        skill_session_ids: [],
         skipped_session_ids: projSessions.map(s => s.session_id),
         reason: `Parse error: ${e.message}`,
       };
@@ -233,7 +237,7 @@ async function main() {
       subdomain: classification.subdomain || null,
       project_name: classification.project_name || null,
       session_ids: projSessions.map(s => s.session_id),
-      research_session_ids: researchIds,
+      skill_session_ids: researchIds,
       skipped_session_ids: skippedIds,
       reason: classification.reason || '',
     };
@@ -254,14 +258,14 @@ async function main() {
   for (const c of classifications) {
     result.projects[c.projPath] = c;
 
-    const tag = c.type === 'research' ? '✓ RESEARCH' :
-                c.type === 'engineering' ? '✗ engineering' :
+    const tag = c.type === 'skilled' ? '✓ SKILLED' :
+                c.type === 'trivial' ? '✗ trivial' :
                 c.type === 'error' ? '✗ ERROR' : '? other';
     console.log(`  ${c.slug} (${c.session_ids.length} sessions): ${tag}`);
     if (c.project_name) console.log(`    → "${c.project_name}"`);
     if (c.domain) console.log(`    → ${c.domain}/${c.subdomain}`);
     if (c.skipped_session_ids.length > 0) {
-      console.log(`    → ${c.research_session_ids.length} research, ${c.skipped_session_ids.length} skipped`);
+      console.log(`    → ${c.skill_session_ids.length} research, ${c.skipped_session_ids.length} skipped`);
     }
     if (opts.verbose) console.log(`    Reason: ${c.reason}`);
   }
@@ -272,10 +276,10 @@ async function main() {
 
   // Summary
   const projects = Object.values(result.projects);
-  const research = projects.filter(p => p.type === 'research');
-  const totalResearchSessions = research.reduce((n, p) => n + p.research_session_ids.length, 0);
-  console.log(`\n  ${research.length}/${projects.length} projects classified as research`);
-  console.log(`  ${totalResearchSessions} research sessions to extract\n`);
+  const skilled = projects.filter(p => p.type === 'skilled');
+  const totalSkillSessions = skilled.reduce((n, p) => n + p.skill_session_ids.length, 0);
+  console.log(`\n  ${skilled.length}/${projects.length} projects classified as skilled`);
+  console.log(`  ${totalSkillSessions} skill sessions to extract\n`);
 }
 
 main().catch(err => {

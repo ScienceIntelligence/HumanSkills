@@ -2,7 +2,7 @@
 /**
  * clean-skills.js
  *
- * Stage 4 of /researchskills-extract: review extracted skills.
+ * Stage 4 of /humanskills-extract: review extracted skills.
  * Spawns an AI instance (via platform.js) that directly
  * reads, deletes, edits, and merges skill files on disk.
  *
@@ -22,7 +22,7 @@ const path = require('path');
 const os = require('os');
 const { parsePlatformFlag, createRunner } = require('./platform');
 
-const CACHE_DIR = path.join(os.homedir(), '.researchskills', 'cache', 'skills');
+const CACHE_DIR = path.join(os.homedir(), '.humanskills', 'cache', 'skills');
 
 // ---------------------------------------------------------------------------
 // CLI
@@ -65,9 +65,9 @@ function collectSkillFiles(sessionIds) {
 function buildPrompt(files) {
   const fileList = files.map(f => f).join('\n');
 
-  return `You are a research knowledge quality reviewer. You have ${files.length} skill files to review.
+  return `You are a human skills quality reviewer. You have ${files.length} skill files to review.
 
-These files were auto-extracted from scientist-AI conversations by a weaker model. Your job is to clean them up: reject non-research content, fix PII leaks, and merge duplicates.
+These files were auto-extracted from human-AI conversations by a weaker model. Your job is to clean them up: reject low-quality or harmful content, fix PII leaks, and merge duplicates.
 
 ## Skill file paths
 
@@ -79,21 +79,19 @@ ${fileList}
 
 Read each file using the Read tool, then perform these operations:
 
-### 1. Reject non-research skills
+### 1. Reject low-quality skills
 
-DELETE (using Bash: rm <filepath>) any skill that is fundamentally engineering, not research:
-- GitHub platform operations (permissions, Rulesets, repo transfer, CI/CD, branch protection)
-- Frontend/backend engineering (auth, database, UI layout, CSS, visualization library choices)
-- DevOps / deployment / package management
-- Project management / terminology naming / documentation organization
-- Debugging specific software tools (Supabase, Firebase, React, etc.)
+DELETE (using Bash: rm <filepath>) any skill that is:
+- Trivial or obvious (e.g. "use spell check", "save your work often")
+- Purely a tool operation with no transferable knowledge (e.g. "click the save button in Excel")
+- Spam, nonsense, or completely off-topic
+- Harmful, dangerous, or unethical advice
 
 KEEP skills about:
-- Scientific research methodology decisions (experiment design, hypothesis selection, data interpretation)
-- Domain facts that AI doesn't know (frontier knowledge, unpublished info, corrections to LLM misconceptions)
-- Concrete research turning points (hypothesis overturned, methodology abandoned, unexpected findings)
-- Knowledge representation methodology (schema design for capturing research decision trees) — ONLY when discussing "how to represent scientific knowledge", NOT "how to code the implementation"
-- Computational science methods (numerical algorithms, solver configurations, simulation setup, scientific data analysis and preprocessing) — where the code implements or validates a scientific method, not generic software engineering
+- Genuine expertise decisions in any discipline (medicine, law, cooking, music, engineering, sports, teaching, crafts, science, design, etc.)
+- Domain-specific knowledge that an AI wouldn't reliably know (local constraints, unpublished practices, corrections to common misconceptions)
+- Meaningful turning points (approach abandoned, unexpected outcome, lesson learned the hard way)
+- IF-THEN rules that reflect real practitioner judgment
 
 ### 2. Check for residual PII
 
@@ -101,7 +99,7 @@ The \`contributor\` field in YAML frontmatter should be the contributor's GitHub
 
 Scan the **body** for residual PII:
 - Real usernames or person names
-- Private URLs (not arxiv.org, doi.org, github.com, en.wikipedia.org, researchskills.ai)
+- Private URLs (not arxiv.org, doi.org, github.com, en.wikipedia.org, humanskills.ai)
 - Email addresses
 - Absolute file paths (e.g., /Users/...)
 

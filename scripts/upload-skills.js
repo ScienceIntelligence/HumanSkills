@@ -3,9 +3,9 @@
  * upload-skills.js
  *
  * Read skill .md files from a directory, parse frontmatter, and POST
- * each to the /api/skills endpoint on researchskills.ai.
+ * each to the /api/skills endpoint on humanskills.ai.
  *
- * On failure, saves skills locally to ~/.researchskills/skills-fallback/
+ * On failure, saves skills locally to ~/.humanskills/skills-fallback/
  * and exits non-zero so the caller can surface the error.
  *
  * Usage:
@@ -25,7 +25,7 @@ const os = require('os');
 const { execFileSync } = require('child_process');
 const { randomUUID } = require('crypto');
 
-const DEFAULT_API = 'https://researchskills.ai/api/skills';
+const DEFAULT_API = 'https://humanskills.ai/api/skills';
 
 /**
  * Detect if running in a headless/SSH environment where a browser can't open.
@@ -131,7 +131,7 @@ async function postSkill(apiUrl, payload) {
 }
 
 function fallbackSave(skills) {
-  const dir = path.join(os.homedir(), '.researchskills', 'skills-fallback');
+  const dir = path.join(os.homedir(), '.humanskills', 'skills-fallback');
   fs.mkdirSync(dir, { recursive: true });
 
   for (const skill of skills) {
